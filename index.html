@@ -9,28 +9,30 @@
     <title>Product Paths</title>
 	
 	<style>
-	 }
-    th, td {
-       
-		
-    }
-   
-tr td:first-child { border-top-left-radius: 10px;   border: 2px solid white; text-align: center;}
-tr td:last-child { border-top-right-radius: 10px;  border: 2px solid white; text-align: center;}
-tr td:first-child { border-bottom-left-radius: 10px;  border: 2px solid white; text-align: center;}
-tr td:last-child { border-bottom-right-radius: 10px;  border: 2px solid white; text-align: center;}
-tr:first-child td { border-top-style: solid; border: 2px solid white; text-align: center; }
-tr td:first-child { border-left-style: solid; border: 2px solid white;text-align: center;}
+	 
+td.result  {   border: 2px solid white; text-align: center;}
+tr td.result:first-child { border-top-left-radius: 10px;   border: 2px solid white; text-align: center;}
+tr td.result:first-child { border-bottom-left-radius: 10px;  border: 2px solid white; text-align: center;}
+tr td.result:last-child { border-top-right-radius: 10px;  border: 2px solid white; text-align: center;}
+tr td.result:last-child { border-bottom-right-radius: 10px;  border: 2px solid white; text-align: center;}
 
-table {
-     width: 75%;
+
+table .search_table .table_result {
+     width: 100%;
      border-collapse: collapse;
 	 
 	 border: 2px solid white;
 	text-align:center;
 	}
-	 
+	
+	
+	
 
+	 .search_table td{
+        text-align:left;
+		 border: 2px solid white;
+    }
+	
 	
 	 .blue-bg {
         background-color: AntiqueWhite;
@@ -50,11 +52,106 @@ table {
         background-color: white;
 		color: darkblue;
 		border-radius: 0px;
+		border: 2px solid white;
     }
+	
+	
+	.selectedFilterSport
+	{
+		border-top-left-radius:5px;    solid white;
+	border-bottom-right-radius: 5px;    solid white;
+	text-align:center;
+	cursor: pointer;
+	margin:5px;
+	background-color:green;
+	color:white;
+	padding:3px;
+	
+	}
+	
+
+
+
+	.notSelectedFilterSport
+	{
+	border-top-left-radius: 5px;   solid white;
+	border-bottom-right-radius: 5px;   solid white;
+	text-align:center;
+	cursor: pointer;
+	margin:5px;
+	background-color:lightgrey;
+	color:white;
+	padding:3px;
+	}
+	
+	
+		.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  background-color: white;
+  padding: 3px;
+}
+	
 </style>
 
 <script>
-	  let nbTotalPages= 10; // Assuming there are 10 total pages
+
+
+function loader()
+{
+
+loadCurrentSportFilter();
+loadJO();
+}
+
+function loadCurrentSportFilter()
+{
+const str = document.getElementById("filter_sport").value;
+const parts = str.split(';');
+
+parts.forEach(sportName => {
+    initListCurrentSportDisplayed(sportName);
+});
+}
+
+
+
+function initListCurrentSportDisplayed(sportName)
+	{
+	
+	if(document.getElementById('filerSport_'+ sportName))
+	{
+		document.getElementById('filerSport_'+ sportName).classList.remove('notSelectedFilterSport');
+		document.getElementById('filerSport_'+ sportName).classList.add('selectedFilterSport');
+
+	}
+
+	}
+	
+	
+	
+	function isSportDisplayed(sportName)
+	{
+	
+	let filtreSport= document.getElementById("filter_sport").value;
+	if(filtreSport.includes (sportName + ";" ))
+	{
+		document.getElementById('filerSport_'+ sportName).classList.remove('selectedFilterSport');
+		document.getElementById('filerSport_'+ sportName).classList.add('notSelectedFilterSport');
+		document.getElementById("filter_sport").value=document.getElementById("filter_sport").value.replace(sportName +';','');
+		return true;
+	}
+	else
+	{
+	document.getElementById('filerSport_'+ sportName).classList.remove('notSelectedFilterSport');
+	 document.getElementById('filerSport_'+ sportName).classList.add('selectedFilterSport');
+	 document.getElementById("filter_sport").value=document.getElementById("filter_sport").value + sportName + ';'; 
+	return false
+	}
+	}
+
+
+	let nbTotalPages= 10; // Assuming there are 10 total pages
 	function loadJO()
 	{
 	
@@ -77,11 +174,15 @@ table {
                
                 data.products.forEach(product => {
 				
-				let filtreSport= document.getElementById("filter_sport").value
-				let max_amount = document.getElementById("max_amount").value 
+				let filtreSport= document.getElementById("filter_sport").value;
+				document.cookie = "filter_sport=" + filtreSport + ";path=/";
+				localStorage.setItem("filter_sport", filtreSport);
+				let max_amount = document.getElementById("max_amount").value ;
+				let use_filter_sport = document.getElementById("use_filter_sport").checked ;
+				
                     if (product.typeAttributes.offer.startingPrice <= max_amount) {
 					
-					 if ( filtreSport=="" || filtreSport.includes (product.name + ";" )  ) {
+					 if ( use_filter_sport==false  ||  filtreSport.includes (product.name + ";" )  ) {
 					
 					
 					idRow=idRow+1;
@@ -104,15 +205,25 @@ table {
         
 					cell_pict.innerHTML = "<img src='"+product.imageUrl + "' width=40px height=40px>" ;
 					cell_pict.classList.add('col_pict');
+					
                     cell_sportName.innerHTML =  product.name;
 					
                     cell_link.innerHTML =" <a href='https://ticket-resale.paris2024.org"+ product.url.path + "' target=_blank>Lien</a>";
 					
-					cell_price.innerHTML = product.typeAttributes.offer.startingPrice;
+					cell_price.innerHTML = Math.ceil(product.typeAttributes.offer.startingPrice);
 					
                     cell_location.innerHTML=product.typeAttributes.liveEntertainment.location.name;
 
 					cell_date.innerHTML =date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' , hour: '2-digit', minute: '2-digit'}); ; //product.typeAttributes.liveEntertainment.startDate;
+					
+					
+					cell_pict.classList.add('result');
+					cell_sportName.classList.add('result');
+					cell_link.classList.add('result');
+					cell_pict.classList.add('result');
+					cell_price.classList.add('result');
+					cell_location.classList.add('result');
+					cell_date.classList.add('result');
 					
 					
 					
@@ -136,33 +247,82 @@ table {
 	
 
 </head>
-<body onload="javascript:loadJO()">
+<body onload="javascript:loader()">
+
+<table class="search_table" align=center><tr>
+<td >Filtre Sport : <br>
+(<input type=checkbox id="use_filter_sport"checked>)</td>
+<td >  <input type=text id="filter_sport" value="Athlétisme;Volleyball de plage;Tir à l'arc;Basketball 3x3;" hidden>
+<div id="listSport" class="grid-container">
+
+<span class='notSelectedFilterSport' id="filerSport_Athlétisme" onclick="javascript:isSportDisplayed('Athlétisme')">Athlétisme</span>
+<span class='notSelectedFilterSport' id="filerSport_Athlétisme - marathon" onclick="javascript:isSportDisplayed('Athlétisme - marathon')">Athlétisme - marathon</span>
+<span class='notSelectedFilterSport' id="filerSport_Aviron" onclick="javascript:isSportDisplayed('Aviron')">Aviron</span>
+<span class='notSelectedFilterSport' id="filerSport_Badminton" onclick="javascript:isSportDisplayed('Badminton')">Badminton</span>
+<span class='notSelectedFilterSport' id="filerSport_Basketball" onclick="javascript:isSportDisplayed('Basketball')">Basketball</span>
+<span class='notSelectedFilterSport' id="filerSport_Basketball 3x3" onclick="javascript:isSportDisplayed('Basketball 3x3')">Basketball 3x3</span>
+<span class='notSelectedFilterSport' id="filerSport_Boxe" onclick="javascript:isSportDisplayed('Boxe')">Boxe</span>
+<span class='notSelectedFilterSport' id="filerSport_Canoë - course en ligne" onclick="javascript:isSportDisplayed('Canoë - course en ligne')">Canoë - course en ligne</span>
+<span class='notSelectedFilterSport' id="filerSport_Canoë-kayak slalom" onclick="javascript:isSportDisplayed('Canoë-kayak slalom')">Canoë-kayak slalom</span>
+<span class='notSelectedFilterSport' id="filerSport_Cyclisme sur piste" onclick="javascript:isSportDisplayed('Cyclisme sur piste')">Cyclisme sur piste</span>
+<span class='notSelectedFilterSport' id="filerSport_Cérémonie de clôture" onclick="javascript:isSportDisplayed('Cérémonie de clôture')">Cérémonie de clôture</span>
+<span class='notSelectedFilterSport' id="filerSport_Escrime" onclick="javascript:isSportDisplayed('Escrime')">Escrime</span>
+<span class='notSelectedFilterSport' id="filerSport_Football" onclick="javascript:isSportDisplayed('Football')">Football</span>
+<span class='notSelectedFilterSport' id="filerSport_Golf" onclick="javascript:isSportDisplayed('Golf')">Golf</span>
+<span class='notSelectedFilterSport' id="filerSport_Gymnastique Trampoline" onclick="javascript:isSportDisplayed('Gymnastique Trampoline')">Gymnastique Trampoline</span>
+<span class='notSelectedFilterSport' id="filerSport_Gymnastique rythmique" onclick="javascript:isSportDisplayed('Gymnastique rythmique')">Gymnastique rythmique</span>
+<span class='notSelectedFilterSport' id="filerSport_Haltérophilie" onclick="javascript:isSportDisplayed('Haltérophilie')">Haltérophilie</span>
+<span class='notSelectedFilterSport' id="filerSport_Handball" onclick="javascript:isSportDisplayed('Handball')">Handball</span>
+<span class='notSelectedFilterSport' id="filerSport_Hockey" onclick="javascript:isSportDisplayed('Hockey')">Hockey</span>
+<span class='notSelectedFilterSport' id="filerSport_Judo" onclick="javascript:isSportDisplayed('Judo')">Judo</span>
+<span class='notSelectedFilterSport' id="filerSport_Lutte" onclick="javascript:isSportDisplayed('Lutte')">Lutte</span>
+<span class='notSelectedFilterSport' id="filerSport_Natation" onclick="javascript:isSportDisplayed('Natation')">Natation</span>
+<span class='notSelectedFilterSport' id="filerSport_Natation artistique" onclick="javascript:isSportDisplayed('Natation artistique')">Natation artistique</span>
+<span class='notSelectedFilterSport' id="filerSport_Parc Urbain la Concorde" onclick="javascript:isSportDisplayed('Parc Urbain la Concorde')">Parc Urbain la Concorde</span>
+<span class='notSelectedFilterSport' id="filerSport_Pentathlon moderne" onclick="javascript:isSportDisplayed('Pentathlon moderne')">Pentathlon moderne</span>
+<span class='notSelectedFilterSport' id="filerSport_Plongeon" onclick="javascript:isSportDisplayed('Plongeon')">Plongeon</span>
+<span class='notSelectedFilterSport' id="filerSport_Sports équestres - dressage" onclick="javascript:isSportDisplayed('Sports équestres - dressage')">Sports équestres - dressage</span>
+<span class='notSelectedFilterSport' id="filerSport_Sports équestres - saut d'obstacles" onclick="javascript:isSportDisplayed('Sports équestres - saut d\'obstacles')">Sports équestres - saut d'obstacles</span>
+<span class='notSelectedFilterSport' id="filerSport_Taekwondo" onclick="javascript:isSportDisplayed('Taekwondo')">Taekwondo</span>
+<span class='notSelectedFilterSport' id="filerSport_Tennis" onclick="javascript:isSportDisplayed('Tennis')">Tennis</span>
+<span class='notSelectedFilterSport' id="filerSport_Tennis de table" onclick="javascript:isSportDisplayed('Tennis de table')">Tennis de table</span>
+<span class='notSelectedFilterSport' id="filerSport_Tir" onclick="javascript:isSportDisplayed('Tir')">Tir</span>
+<span class='notSelectedFilterSport' id="filerSport_Tir à l'arc" onclick="isSportDisplayed('Tir à l\'arc')">Tir à l'arc</span>
+<span class='notSelectedFilterSport' id="filerSport_Voile" onclick="javascript:isSportDisplayed('Voile')">Voile</span>
+<span class='notSelectedFilterSport' id="filerSport_Volleyball" onclick="javascript:isSportDisplayed('Volleyball')">Volleyball</span>
+<span class='notSelectedFilterSport' id="filerSport_Volleyball de plage" onclick="javascript:isSportDisplayed('Volleyball de plage')">Volleyball de plage</span>
+<span class='notSelectedFilterSport' id="filerSport_Water-polo" onclick="javascript:isSportDisplayed('Water-polo')">Water-polo</span>
 
 
-<input type=button onclick="javascript:loadJO()" value = "Chercher">
-<select id="nb_tickets">
- <option>1</option>
- <option selected>2</option>
-  
-  <option>3</option>
-</select> 
 
-<input type=text id="filter_sport" value="Athlétisme;Tir à l'arc; Volleyball de plage;">
-<input type=text id="max_amount" value="110" size = 3>
-<br><br><br><br>
+</div>
 
-    <table border="1">
+
+</td>
+</tr><tr>
+<td>Places :</td>
+<td><select id="nb_tickets"><option>1</option><option selected>2</option><option>3</option></select> </td>
+</tr><tr>
+<td> Prix max : </td> <td><input type=text id="max_amount" value="110" size = 3></td>
+</tr>
+</table>
+<p align=center><input type=button onclick="javascript:loadJO()" value = "Chercher"></p>
+
+<br>
+
+    <table width=100% class="table_result">
         <thead>
             <tr class="header_style">
 			<th width=50px > </th>
-                <th>Sport</th>
+                <th class="header_style">Sport</th>
                
-				 <th>Prix</th>
-				  <th >Date</th>
-				   <th >Lieu</th>
-				   <th>Lien</th>
+				 <th class="header_style">Prix</th>
+				  <th class="header_style">Date</th>
+				   <th class="header_style">Lieu</th>
+				   <th class="header_style" >Lien</th>
             </tr>
         </thead>
+		<hr>
         <tbody id="productTable">
             <!-- Table content will be dynamically generated here -->
         </tbody>
