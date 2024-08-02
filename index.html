@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<!-- <meta http-equiv="refresh" content="30"> -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Paths</title>
+	
+	<style>
+	 }
+    th, td {
+       
+		
+    }
+   
+tr td:first-child { border-top-left-radius: 10px;   border: 2px solid white; text-align: center;}
+tr td:last-child { border-top-right-radius: 10px;  border: 2px solid white; text-align: center;}
+tr td:first-child { border-bottom-left-radius: 10px;  border: 2px solid white; text-align: center;}
+tr td:last-child { border-bottom-right-radius: 10px;  border: 2px solid white; text-align: center;}
+tr:first-child td { border-top-style: solid; border: 2px solid white; text-align: center; }
+tr td:first-child { border-left-style: solid; border: 2px solid white;text-align: center;}
+
+table {
+     width: 75%;
+     border-collapse: collapse;
+	 
+	 border: 2px solid white;
+	text-align:center;
+	}
+	 
+
+	
+	 .blue-bg {
+        background-color: AntiqueWhite;
+    }
+	
+		 .lavender-bg {
+        background-color: #eeeeee;
+    }
+	
+			 .ivory-bg {
+        background-color: LightBlue;
+    }
+	
+	
+	
+	 .header_style {
+        background-color: white;
+		color: darkblue;
+		border-radius: 0px;
+    }
+</style>
+
+<script>
+	  let nbTotalPages= 10; // Assuming there are 10 total pages
+	function loadJO()
+	{
+	
+	 const table = document.getElementById('productTable');
+				table.innerHTML = "";
+      
+        let currentPage = 1;
+		let nb_tickets= document.getElementById("nb_tickets").value
+		let idRow=0;
+        for(currentPage= 1; currentPage <= nbTotalPages; currentPage++) {
+            // Fetch data from API for each page
+       
+
+		
+        let  url =  `https://public-api.eventim.com/websearch/search/api/exploration/v1/products?webId=fansale__paris2024-org&language=fr&retail_partner=24J&product_type=Offer&categories=Jeux%20Olympiques&in_stock=true&sort=DateAsc&amount=${nb_tickets}&page=${currentPage}`;
+
+            fetch(url)
+               .then(response => response.json())
+            .then(data => {
+               
+                data.products.forEach(product => {
+				
+				let filtreSport= document.getElementById("filter_sport").value
+				let max_amount = document.getElementById("max_amount").value 
+                    if (product.typeAttributes.offer.startingPrice <= max_amount) {
+					
+					 if ( filtreSport=="" || filtreSport.includes (product.name + ";" )  ) {
+					
+					
+					idRow=idRow+1;
+					const row = table.insertRow();
+				   
+				    
+                    const cell_pict = row.insertCell(0);
+					const cell_sportName = row.insertCell(1);
+                    
+					const cell_price = row.insertCell(2);
+					const cell_date = row.insertCell(3);
+					const cell_location = row.insertCell(4);
+					const cell_link = row.insertCell(5);
+					
+					if(idRow%2==0){row.classList.add('lavender-bg');}
+					else {row.classList.add('ivory-bg');}
+					  let startingPrice = product.typeAttributes.offer.startingPrice;
+
+					const date = new Date(product.typeAttributes.liveEntertainment.startDate);
+        
+					cell_pict.innerHTML = "<img src='"+product.imageUrl + "' width=40px height=40px>" ;
+					cell_pict.classList.add('col_pict');
+                    cell_sportName.innerHTML =  product.name;
+					
+                    cell_link.innerHTML =" <a href='https://ticket-resale.paris2024.org"+ product.url.path + "' target=_blank>Lien</a>";
+					
+					cell_price.innerHTML = product.typeAttributes.offer.startingPrice;
+					
+                    cell_location.innerHTML=product.typeAttributes.liveEntertainment.location.name;
+
+					cell_date.innerHTML =date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' , hour: '2-digit', minute: '2-digit'}); ; //product.typeAttributes.liveEntertainment.startDate;
+					
+					
+					
+				
+	                        }
+						
+     }
+                
+					});
+			
+            });
+              
+
+			
+            
+        }
+		}
+		
+		
+    </script>
+	
+
+</head>
+<body onload="javascript:loadJO()">
+
+
+<input type=button onclick="javascript:loadJO()" value = "Chercher">
+<select id="nb_tickets">
+ <option>1</option>
+ <option selected>2</option>
+  
+  <option>3</option>
+</select> 
+
+<input type=text id="filter_sport" value="Athlétisme;Tir à l'arc; Volleyball de plage;">
+<input type=text id="max_amount" value="110" size = 3>
+<br><br><br><br>
+
+    <table border="1">
+        <thead>
+            <tr class="header_style">
+			<th width=50px > </th>
+                <th>Sport</th>
+               
+				 <th>Prix</th>
+				  <th >Date</th>
+				   <th >Lieu</th>
+				   <th>Lien</th>
+            </tr>
+        </thead>
+        <tbody id="productTable">
+            <!-- Table content will be dynamically generated here -->
+        </tbody>
+    </table>
+
+    
+	
+	
+</body>
+</html>
